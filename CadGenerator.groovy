@@ -22,17 +22,25 @@ println "Bevel tooth face length " + bevelGears.get(5)
 println "Gear B computed thickness " + bevelGears.get(6)
 // return the CSG parts
 
+File goatFile = ScriptingEngine.fileFromGit(
+	"https://github.com/jdalmeida/BestTrophy.git",
+	"goat.stl");
+
+
+
 int numGears = 6;
 
 def roundGears=[];
 
-
+double angle = 360/numGears
 
 
 for(int i=0; i<=numGears; i++){
-	roundGears.add( bevelGears.get(1).rotz(90 * i))
+	roundGears.add( bevelGears.get(1).rotz(angle * i))
 }
 
 def topGear = bevelGears.get(0).roty(180).movez(2*bevelGears.get(3))
 
-return [bevelGears.get(0), topGear,roundGears]
+CSG goat  = Vitamins.get(goatFile).scale(0.5).toZMin().movez(topGear.getMaxZ())
+
+return [bevelGears.get(0), topGear, roundGears, goat]
