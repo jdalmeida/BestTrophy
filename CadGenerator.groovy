@@ -46,5 +46,6 @@ CSG goat  = Vitamins.get(goatFile).scale(0.5).toZMin().movez(topGear.getMaxZ()-1
 topGear = topGear.difference(goat)
 topGear.setName("top gear")
 goat.setName('Goat')
+CSG vitamin_roundMotor_WPI_gb37y3530_50en = Vitamins.get("roundMotor", "WPI-gb37y3530-50en")
 
-return [bevelGears.get(0), topGear, roundGears, goat]
+return [bevelGears.get(0), topGear, roundGears, goat,vitamin_roundMotor_WPI_gb37y3530_50en]
