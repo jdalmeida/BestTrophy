@@ -88,4 +88,4 @@ goat.setName('Goat')
 // Make Motor
 CSG motor = Vitamins.get("roundMotor", "WPI-gb37y3530-50en")
 
-return [bottomGear, bottomBolt, topBolt, roundGears, bolts, center]
+return [bottomGear, bottomBolt, topBolt, roundGears, bolts, center, topGear, goat]
