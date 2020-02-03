@@ -36,10 +36,11 @@ def roundGears=[];
 
 double angle = 360/numGears
 
-def boltsize = 20
+def boltsize = 30
+def bolthead = 5
 LengthParameter boltLength = new LengthParameter("Bolt Length",10,[180,10])
 boltLength.setMM(boltsize)
-CSG m5Bolt = Vitamins.get("capScrew", "M5").movez(boltsize).roty(90).movez(bevelGears.get(3)).movex(-1*bevelGears.get(2) + boltsize + 5)
+CSG m5Bolt = Vitamins.get("capScrew", "M5").movez(boltsize).roty(90).movez(bevelGears.get(3)).movex(-1*bevelGears.get(2) + boltsize + bolthead)
 
 
 // add gears around circle
@@ -55,10 +56,25 @@ for(int i=0; i<=numGears; i++){
 	roundGears.get(i).setName("Planet Gears")
 }
 
-// Top gear 
-def topGear = bevelGears.get(0).roty(180).movez(2*bevelGears.get(3))
+def midBoltSize = 12
+//LengthParameter boltLength = new LengthParameter("Bolt Length",10,[180,10])
+boltLength.setMM(midBoltSize)
 
-CSG topBolt = m5bolt.movez(topGear.
+// Top Gear and Bolt
+def topGear = bevelGears.get(0).roty(180).movez(2*bevelGears.get(3))
+CSG topBolt = Vitamins.get("capScrew", "M5").movez(topGear.getMaxZ() - bolthead)
+topGear = topGear.difference(topBolt)
+
+// Bottom Gear and Bolt
+def bottomBolt = Vitamins.get("capScrew", "M5").roty(180).movez(bolthead)
+def bottomGear = bevelGears.get(0).difference(bottomBolt)
+
+// Center nugget
+def centerSize = 15
+def center = new Dodecahedron(centerSize).toCSG().roty(60).movez(bevelGears.get(3))
+
+center = center.difference(bottomBolt).difference(topBolt).difference(bolts)
+
 
 // Goat Statue
 CSG goat  = Vitamins.get(goatFile).scale(0.7).toZMin().movez(topGear.getMaxZ()-1).movex(-5)
@@ -72,4 +88,4 @@ goat.setName('Goat')
 // Make Motor
 CSG motor = Vitamins.get("roundMotor", "WPI-gb37y3530-50en")
 
-return [bevelGears.get(0), topGear, roundGears, bolts]
+return [bottomGear, bottomBolt, topBolt, roundGears, bolts, center]
