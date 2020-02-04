@@ -56,6 +56,10 @@ for(int i=0; i<=numGears; i++){
 	roundGears.get(i).setName("Planet Gears")
 }
 
+// Center nugget
+def centerSize = 15
+def center = new Dodecahedron(centerSize).toCSG().roty(60).movez(bevelGears.get(3))
+
 def midBoltSize = 12
 //LengthParameter boltLength = new LengthParameter("Bolt Length",10,[180,10])
 boltLength.setMM(midBoltSize)
@@ -66,15 +70,19 @@ CSG topBolt = Vitamins.get("capScrew", "M5").movez(topGear.getMaxZ() - bolthead)
 topGear = topGear.difference(topBolt)
 
 // Bottom Gear and Bolt
-def bottomBolt = Vitamins.get("capScrew", "M5").roty(180).movez(bolthead)
-def bottomGear = bevelGears.get(0).difference(bottomBolt)
+def bottomGear = bevelGears.get(0)
+//def bottomBolt = Vitamins.get("capScrew", "M5").roty(180).movez(bolthead)
+//bottomGear = bottomGear.difference(bottomBolt)
+//center = center.difference(bottomBolt)
 
-// Center nugget
-def centerSize = 15
-def center = new Dodecahedron(centerSize).toCSG().roty(60).movez(bevelGears.get(3))
 
-center = center.difference(bottomBolt).difference(topBolt).difference(bolts)
+// Make Motor
+CSG motor = Vitamins.get("roundMotor", "WPI-gb37y3530-50en")
+bottomGear = bottomGear.difference(motor)
 
+// Center Shaft Holes
+center = center.difference(motor)
+center = center.difference(topBolt).difference(bolts)
 
 // Goat Statue
 CSG goat  = Vitamins.get(goatFile).scale(0.7).toZMin().movez(topGear.getMaxZ()-1).movex(-5)
@@ -82,10 +90,10 @@ CSG goat  = Vitamins.get(goatFile).scale(0.7).toZMin().movez(topGear.getMaxZ()-1
 // Notch in top Gear
 topGear = topGear.difference(goat)
 
+// Name Things
 topGear.setName("top gear")
+bottomGear = bottomGear.setName("Bottom Gear")
 goat.setName('Goat')
+center.setName('center')
 
-// Make Motor
-CSG motor = Vitamins.get("roundMotor", "WPI-gb37y3530-50en")
-
-return [bottomGear, bottomBolt, topBolt, roundGears, bolts, center, topGear, goat]
+return [bottomGear, topBolt, roundGears, bolts, center, topGear, goat]
