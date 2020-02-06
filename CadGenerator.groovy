@@ -138,6 +138,8 @@ CSG goat  = Vitamins.get(goatFile).
 	movez(topGear.getMaxZ()-1).
 	movex(-5)
 
+goat = goat.difference(topBolt)
+
 // Notch in top Gear
 //topGear = topGear.minkowskiDifference(goat, 0.5)
 
@@ -147,6 +149,4 @@ bottomGear = bottomGear.setName("Bottom Gear")
 goat.setName("Goat")
 center.setName("Center")
 
-return[topandbottom, roundGears, center, bolts, bearings]
-//return [bottomGear, topBolt, roundGears, bolts, center, topGear]
-//return [center] 
+return[topandbottom, roundGears, center, bolts, bearings, goat]
