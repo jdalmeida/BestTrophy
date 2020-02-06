@@ -40,15 +40,15 @@ double angle = 360/numGears
 def bolthead = 5
 LengthParameter boltLength = new LengthParameter("Bolt Length",10,[180,10])
 boltLength.setMM(boltsize)
-CSG m5Bolt = Vitamins.get("capScrew", "M5").movez(boltsize).roty(90).movez(bevelGears.get(3)).movex(-1*bevelGears.get(2) + boltsize + bolthead)
+CSG m5Bolt = Vitamins.get("capScrew", "M5").toolOffset(0.5)
 
+CSG bearing = Vitamins.get("ballBearing", "695zz")
 
 // add gears around circle
 for(int i=0; i<=numGears; i++){
 	CSG gear = bevelGears.get(1).rotz(angle * i)
 	
-	bolts.add(Vitamins.get("capScrew", "M5").
-		movez(boltsize).roty(90).
+	bolts.add(m5Bolt.movez(boltsize).roty(90).
 		movez(bevelGears.get(3)).movex(-1*bevelGears.get(2) + boltsize + 5).
 		rotz(angle*i))
 
@@ -58,27 +58,28 @@ for(int i=0; i<=numGears; i++){
 
 // Center nugget
 def centerSize = 15
-def center = new Dodecahedron(centerSize).toCSG().roty(60).movez(bevelGears.get(3))
+def center = new Cylinder(centerSize, centerSize, centerSize, 6).toCSG().rotz(30).movez(bevelGears.get(3)-centerSize/2)
+//def center = new Dodecahedron(centerSize).toCSG().roty(60).movez(bevelGears.get(3))
 
 def midBoltSize = 12
 //LengthParameter boltLength = new LengthParameter("Bolt Length",10,[180,10])
-boltLength.setMM(midBoltSize)
+//boltLength.setMM(midBoltSize)
 
 // Top Gear and Bolt
 def topGear = bevelGears.get(0).roty(180).movez(2*bevelGears.get(3))
-CSG topBolt = Vitamins.get("capScrew", "M5").movez(topGear.getMaxZ() - bolthead)
+CSG topBolt = m5Bolt.movez(topGear.getMaxZ() - bolthead)
 topGear = topGear.difference(topBolt)
 
 // Bottom Gear and Bolt
 def bottomGear = bevelGears.get(0)
-//def bottomBolt = Vitamins.get("capScrew", "M5").roty(180).movez(bolthead)
-//bottomGear = bottomGear.difference(bottomBolt)
-//center = center.difference(bottomBolt)
+def bottomBolt = m5Bolt.roty(180).movez(bolthead)
+bottomGear = bottomGear.difference(bottomBolt)
+center = center.difference(bottomBolt)
 
 
 // Make Motor
 CSG motor = Vitamins.get("roundMotor", "WPI-gb37y3530-50en")
-bottomGear = bottomGear.difference(motor)
+//bottomGear = bottomGear.difference(motor)
 
 // Center Shaft Holes
 center = center.difference(motor)
@@ -88,7 +89,7 @@ center = center.difference(topBolt).difference(bolts)
 CSG goat  = Vitamins.get(goatFile).scale(0.7).toZMin().movez(topGear.getMaxZ()-1).movex(-5)
 
 // Notch in top Gear
-topGear = topGear.difference(goat)
+topGear = topGear.difference(goat.toolOffset(0.5))
 
 // Name Things
 topGear.setName("top gear")
@@ -96,4 +97,4 @@ bottomGear = bottomGear.setName("Bottom Gear")
 goat.setName('Goat')
 center.setName('center')
 
-return [bottomGear, topBolt, roundGears, bolts, center, topGear, goat]
+return [bottomGear, topBolt, roundGears, bolts, center]
