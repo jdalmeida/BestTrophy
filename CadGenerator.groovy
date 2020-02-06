@@ -31,70 +31,122 @@ File goatFile = ScriptingEngine.fileFromGit(
 int numGears = 6
 int numShafts = numGears/2
 
-def roundGears=[];
+// Rotated Objects
+def roundGears=[]
 def bolts=[]
+def bearings=[]
+def inserts = []
 
 double angle = 360/numGears
 
+// Create M5 Bolts
 def boltsize = 30
 def bolthead = 5
 LengthParameter boltLength = new LengthParameter("Bolt Length",10,[180,10])
 boltLength.setMM(boltsize)
 CSG m5Bolt = Vitamins.get("capScrew", "M5").toolOffset(0.5)
 
-CSG bearing = Vitamins.get("ballBearing", "695zz")
+// Create bearing
+CSG bearingTemp = Vitamins.get("ballBearing", "695zz").toolOffset(0.5)
+def bearingHeight = bearingTemp.getTotalZ()
+bearingTemp = bearingTemp.roty(90)
 
-// add gears around circle
+// add gears around circle with bolts and bearings
 for(int i=0; i<=numGears; i++){
 	CSG gear = bevelGears.get(1).rotz(angle * i)
 	
-	bolts.add(m5Bolt.movez(boltsize).roty(90).
-		movez(bevelGears.get(3)).movex(-1*bevelGears.get(2) + boltsize + 5).
+	bolts.add(m5Bolt.movez(boltsize).
+		roty(90).
+		movez(bevelGears.get(3)).
+		movex(-1*bevelGears.get(2) + boltsize).
 		rotz(angle*i))
-
-	roundGears.add(gear.difference(bolts.get(i)))
+		
+	bearings.add(bearingTemp.movez(bevelGears.get(3))
+		.movex(-1*bevelGears.get(2) + bearingHeight)
+		.rotz(angle*i))
+	
+	roundGears.add(gear.difference(bearings.get(i)).
+		difference(bolts.get(i)))
+		
 	roundGears.get(i).setName("Planet Gears")
 }
 
-// Center nugget
-def centerSize = 15
-def center = new Cylinder(centerSize, centerSize, centerSize, 6).toCSG().rotz(30).movez(bevelGears.get(3)-centerSize/2)
-//def center = new Dodecahedron(centerSize).toCSG().roty(60).movez(bevelGears.get(3))
 
-def midBoltSize = 12
-//LengthParameter boltLength = new LengthParameter("Bolt Length",10,[180,10])
-//boltLength.setMM(midBoltSize)
+// Center knuckle
+def centerSize = 20
+def center = new Cylinder(centerSize, centerSize, centerSize, numGears).toCSG().
+	rotz(30).
+	movez(bevelGears.get(3)-centerSize/2)
 
-// Top Gear and Bolt
-def topGear = bevelGears.get(0).roty(180).movez(2*bevelGears.get(3))
-CSG topBolt = m5Bolt.movez(topGear.getMaxZ() - bolthead)
-topGear = topGear.difference(topBolt)
 
-// Bottom Gear and Bolt
+// Create nut inserts
+CSG insertTemp = Vitamins.get("heatedThreadedInsert", "M5").roty(-90).
+	movex(center.getMinX()).
+	movez(bevelGears.get(3))
+
+for(int i=0; i<=numGears; i++){
+	inserts.add(insertTemp.rotz(angle*i))
+}
+
+// 12mm Bolt
+def smallBoltSize = 12
+LengthParameter smallBoltLength = new LengthParameter("Bolt Length",10,[180,10])
+smallBoltLength.setMM(smallBoltSize)
+def m5Bolt12 = Vitamins.get("capScrew", "M5").toolOffset(0.5)
+
+topandbottom = []
+
+// Top Gear and Cuts
+def topGear = bevelGears.get(0).
+	roty(180).
+	movez(2*bevelGears.get(3))
+def topBolt = m5Bolt12.
+	movez(topGear.getMaxZ())
+def topBearing = bearingTemp.
+	roty(-90).
+	movez(2*bevelGears.get(3) - bearingHeight)
+topGear = topGear.difference(topBolt).
+	difference(topBearing)
+
+topandbottom.add([topGear, topBolt, topBearing])
+
+// Bottom Gear and Cuts
 def bottomGear = bevelGears.get(0)
-def bottomBolt = m5Bolt.roty(180).movez(bolthead)
-bottomGear = bottomGear.difference(bottomBolt)
-center = center.difference(bottomBolt)
+def bottomBolt = m5Bolt12.roty(180).movez(bolthead)
+def bottomBearing = bearingTemp.roty(-90)
+bottomGear = bottomGear.difference(bottomBolt).
+	difference(bottomBolt)
 
+topandbottom.add([bottomGear, bottomBolt, bottomBearing])
 
 // Make Motor
 CSG motor = Vitamins.get("roundMotor", "WPI-gb37y3530-50en")
 //bottomGear = bottomGear.difference(motor)
 
 // Center Shaft Holes
-center = center.difference(motor)
-center = center.difference(topBolt).difference(bolts)
+center = center.difference(bottomBolt).
+	difference(topBolt).
+	difference(bolts).
+	difference(inserts)
+//	.difference(motor)
 
+	
 // Goat Statue
-CSG goat  = Vitamins.get(goatFile).scale(0.7).toZMin().movez(topGear.getMaxZ()-1).movex(-5)
+CSG goat  = Vitamins.get(goatFile).
+	scale(0.7).
+	toZMin().
+	movez(topGear.getMaxZ()-1).
+	movex(-5)
 
 // Notch in top Gear
-topGear = topGear.difference(goat.toolOffset(0.5))
+//topGear = topGear.minkowskiDifference(goat, 0.5)
 
 // Name Things
-topGear.setName("top gear")
+topGear.setName("Top Gear")
 bottomGear = bottomGear.setName("Bottom Gear")
-goat.setName('Goat')
-center.setName('center')
+goat.setName("Goat")
+center.setName("Center")
 
-return [bottomGear, topBolt, roundGears, bolts, center]
+return[topandbottom, roundGears, center, bolts, bearings]
+//return [bottomGear, topBolt, roundGears, bolts, center, topGear]
+//return [center] 
