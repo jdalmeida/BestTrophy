@@ -89,7 +89,7 @@ for(int i=0; i<=numGears; i++){
 }
 
 // 12mm Bolt
-def smallBoltSize = 12
+def smallBoltSize = 20
 LengthParameter smallBoltLength = new LengthParameter("Bolt Length",10,[180,10])
 smallBoltLength.setMM(smallBoltSize)
 def m5Bolt12 = Vitamins.get("capScrew", "M5").toolOffset(0.5)
@@ -97,14 +97,12 @@ def m5Bolt12 = Vitamins.get("capScrew", "M5").toolOffset(0.5)
 topandbottom = []
 
 // Top Gear and Cuts
-def topGear = bevelGears.get(0).
-	roty(180).
+def topGear = bevelGears.get(0).roty(180).
 	movez(2*bevelGears.get(3))
 def topBolt = m5Bolt12.
 	movez(topGear.getMaxZ())
-def topBearing = bearingTemp.
-	roty(-90).
-	movez(2*bevelGears.get(3) - bearingHeight)
+def topBearing = bearingTemp.roty(-90).
+	movez(2*bevelGears.get(3) - bearingHeight + 1)
 topGear = topGear.difference(topBolt).
 	difference(topBearing)
 
@@ -112,10 +110,10 @@ topandbottom.add([topGear, topBolt, topBearing])
 
 // Bottom Gear and Cuts
 def bottomGear = bevelGears.get(0)
-def bottomBolt = m5Bolt12.roty(180).movez(bolthead)
+def bottomBolt = m5Bolt12.roty(180)
 def bottomBearing = bearingTemp.roty(-90)
 bottomGear = bottomGear.difference(bottomBolt).
-	difference(bottomBolt)
+	difference(bottomBearing)
 
 topandbottom.add([bottomGear, bottomBolt, bottomBearing])
 
@@ -138,10 +136,10 @@ CSG goat  = Vitamins.get(goatFile).
 	movez(topGear.getMaxZ()-1).
 	movex(-5)
 
-goat = goat.difference(topBolt)
+goat = goat.difference(topBolt).difference(topBearing)
 
 // Notch in top Gear
-//topGear = topGear.minkowskiDifference(goat, 0.5)
+topGear = topGear.minkowskiDifference(goat, 0.5)
 
 // Name Things
 topGear.setName("Top Gear")
@@ -150,3 +148,4 @@ goat.setName("Goat")
 center.setName("Center")
 
 return[topandbottom, roundGears, center, bolts, bearings, goat]
+//return [topGear, bottomGear, topBearing, bottomBearing, topBolt]
